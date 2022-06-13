@@ -1,24 +1,25 @@
-use std::{env, fs, process};
+use std::{env, error::Error, fs, process};
 
 fn main() {
     let arguments: Vec<String> = env::args().collect();
 
-    let Configuration {
-        invoked_name,
-        query,
-        file_name,
-    } = Configuration::new(&arguments).unwrap_or_else(|err| {
+    let configuration = Configuration::new(&arguments).unwrap_or_else(|err| {
         println!("Error creating configuration: {}", err);
         process::exit(1);
     });
-    println!(
-        "Called as '{}', searching for '{}' in file '{}'",
-        invoked_name, query, file_name
-    );
+    if let Err(e) = run(configuration) {
+        println!("Application error: {}", e);
 
-    let content = fs::read_to_string(&file_name).expect("I shouldn't panic for reading a file 🙃");
+        process::exit(1);
+    }
+}
 
-    println!("Contets of '{}':\n{}", file_name, content);
+fn run(config: Configuration) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_name)?;
+
+    println!("With text:\n{}", contents);
+
+    Ok(())
 }
 
 struct Configuration {
