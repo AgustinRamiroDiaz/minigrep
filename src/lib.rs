@@ -30,11 +30,19 @@ impl Configuration {
     }
 }
 
-fn search<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
-    return content
+fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents
         .lines()
         .filter(|line| line.contains(query))
-        .collect();
+        .collect()
+}
+
+fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let lowercase_query = query.to_lowercase();
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&lowercase_query))
+        .collect()
 }
 
 #[cfg(test)]
@@ -50,6 +58,14 @@ peque
 peque
 pasteleria
 ";
-        assert_eq!(vec!["la peque", "pasteleria"], search(query, contents))
+        assert_eq!(vec!["la peque", "pasteleria"], search(query, contents));
+    }
+
+    #[test]
+    fn case_insensitive() {
+        let query = "lA";
+        let contents = "La peque\npunchi punchi";
+
+        assert_eq!(vec!["La peque"], search_case_insensitive(query, contents));
     }
 }
